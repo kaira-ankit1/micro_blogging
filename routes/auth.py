@@ -1,5 +1,6 @@
-from flask import Blueprint,request,jsonify
-from service.user import User
+from flask import request, flash,jsonify
+from flask_login import logout_user, login_required
+from service.AuthService import AuthService
 from . import routes
 
 @routes.route("/register", methods=["POST"])
@@ -16,13 +17,10 @@ def register():
         errors.append("Please provide Username")
     if ('password' not in formData) or (formData['password'] is None):
         errors.append("Please provide Password")
-    if ('dateOfBirth' not in formData) or (formData['dateOfBirth'] is None):
-        errors.append("Please provide Date of Birth")
     if len(errors) > 0 :
-        return jsonify({"status":"error","error":errors})
+        return jsonify({"status":"error","messages":errors})
     else:
-        return User.register(formData)
-
+        return AuthService.register(formData)
 
 @routes.route("/login", methods=["POST"])
 def login():
@@ -33,6 +31,12 @@ def login():
     if ('password' not in formData) or (formData['password'] is None):
         errors.append("Please provide Password")
     if len(errors) > 0 :
-        return jsonify({"status":"error","error":errors})
+        return jsonify({"status":"error","messages":errors})
     else:
-        return User.login(formData)
+        return AuthService.login(formData)
+	
+@routes.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return jsonify({"status":"success","messages":"User Success fully logged out"})
